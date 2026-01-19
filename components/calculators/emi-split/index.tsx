@@ -3,16 +3,10 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { FormField } from "@/components/common/FormField";
+import { SummaryDataPoint } from "@/components/common/SummaryDataPoint";
+import { DataTable, type DataTableColumn } from "@/components/common/DataTable";
 
 interface EMIResult {
   emi: number;
@@ -47,50 +41,6 @@ interface LoanFormProps {
   rentIncreaseRate: string;
   setRentIncreaseRate: (value: string) => void;
   onCalculate: () => void;
-}
-
-interface FormFieldProps {
-  id: string;
-  label: string;
-  type?: string;
-  step?: string;
-  arrowStep?: number;
-  value: string;
-  onChange: (value: string) => void;
-}
-
-function FormField({ id, label, type = "number", step, arrowStep = 1, value, onChange }: FormFieldProps) {
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-      e.preventDefault();
-      const currentValue = parseFloat(value) || 0;
-      const newValue = e.key === "ArrowUp" 
-        ? currentValue + arrowStep 
-        : currentValue - arrowStep;
-      
-      // Calculate decimal places from arrowStep to fix floating point precision
-      const decimalPlaces = arrowStep.toString().split('.')[1]?.length || 0;
-      const roundedValue = Math.max(0, parseFloat(newValue.toFixed(decimalPlaces)));
-      
-      onChange(roundedValue.toString());
-    }
-  };
-
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={id} className="text-base">{label}</Label>
-      <Input
-        id={id}
-        type={type}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onWheel={(e) => e.currentTarget.blur()}
-        onKeyDown={handleKeyDown}
-        className="rounded-none h-12 text-base [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-      />
-    </div>
-  );
 }
 
 function LoanForm({
@@ -197,23 +147,6 @@ interface ResultsSummaryProps {
   formatCurrency: (value: number) => string;
 }
 
-interface SummaryDataPointProps {
-  label: string;
-  value: string | number;
-  size?: "large" | "normal";
-}
-
-function SummaryDataPoint({ label, value, size = "normal" }: SummaryDataPointProps) {
-  return (
-    <Card className="rounded-none shadow-none border-0">
-      <CardContent className="p-4 space-y-2 bg-muted/50">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className={`font-bold ${size === "large" ? "text-3xl" : "text-2xl"}`}>{value}</p>
-      </CardContent>
-    </Card>
-  );
-}
-
 function ResultsSummary({ result, tenure, formatCurrency }: ResultsSummaryProps) {
   return (
     <Card className="rounded-none">
@@ -252,59 +185,6 @@ function ResultsSummary({ result, tenure, formatCurrency }: ResultsSummaryProps)
         </div>
       </CardContent>
     </Card>
-  );
-}
-
-interface DataTableColumn<T> {
-  key: keyof T | string;
-  header: string;
-  align?: "left" | "right" | "center";
-  className?: string;
-  render?: (value: any, row: T) => React.ReactNode;
-}
-
-interface DataTableProps<T> {
-  data: T[];
-  columns: DataTableColumn<T>[];
-  getRowKey: (row: T) => string | number;
-}
-
-function DataTable<T>({ data, columns, getRowKey }: DataTableProps<T>) {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          {columns.map((column, index) => (
-            <TableHead 
-              key={index} 
-              className={`text-base ${column.align === "right" ? "text-right" : column.align === "center" ? "text-center" : ""}`}
-            >
-              {column.header}
-            </TableHead>
-          ))}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {data.map((row) => (
-          <TableRow key={getRowKey(row)}>
-            {columns.map((column, index) => {
-              const value = typeof column.key === 'string' && column.key.includes('.') 
-                ? column.key.split('.').reduce((obj: any, key) => obj?.[key], row)
-                : (row as any)[column.key];
-              
-              return (
-                <TableCell 
-                  key={index} 
-                  className={`text-base ${column.align === "right" ? "text-right" : column.align === "center" ? "text-center" : ""} ${column.className || ""}`}
-                >
-                  {column.render ? column.render(value, row) : value}
-                </TableCell>
-              );
-            })}
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
   );
 }
 
