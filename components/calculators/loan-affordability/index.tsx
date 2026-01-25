@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { TabSelector } from "@/components/common/TabSelector";
 
 type LoanType = "car" | "home" | "phone" | "vacation";
 
@@ -24,6 +24,13 @@ const loanTypeInfo = {
   },
 };
 
+const LOAN_TYPE_OPTIONS = [
+  { value: "car", label: "Car" },
+  { value: "home", label: "Home" },
+  { value: "phone", label: "Phone" },
+  { value: "vacation", label: "Vacation" },
+];
+
 export default function LoanAffordabilityCalculator() {
   const [selectedType, setSelectedType] = useState<LoanType>("car");
 
@@ -32,25 +39,14 @@ export default function LoanAffordabilityCalculator() {
       <h1 className="text-4xl font-bold mb-6">Loan Affordability Calculator</h1>
       
       {/* Loan Type Tabs */}
-      <Card className="rounded-none mb-8">
-        <CardContent className="p-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {(Object.keys(loanTypeInfo) as LoanType[]).map((type) => (
-              <button
-                key={type}
-                onClick={() => setSelectedType(type)}
-                className={`px-6 py-3 rounded-none text-base font-medium transition-colors ${
-                  selectedType === type
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted hover:bg-muted/80"
-                }`}
-              >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="mb-8">
+        <TabSelector
+          options={LOAN_TYPE_OPTIONS}
+          selected={selectedType}
+          onChange={(value) => setSelectedType(value as LoanType)}
+          columns={4}
+        />
+      </div>
 
       <p className="text-muted-foreground mb-8 text-lg">
         {loanTypeInfo[selectedType].description}

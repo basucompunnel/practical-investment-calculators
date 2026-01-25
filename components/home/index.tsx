@@ -13,6 +13,7 @@ import {
   MdQuestionMark,
   MdTrendingDown,
   MdBarChart,
+  MdTrackChanges,
 } from "react-icons/md";
 import { FaHome, FaCar } from "react-icons/fa";
 import { IconType } from "react-icons";
@@ -71,20 +72,27 @@ const calculators = [
     href: "/calculators/loan-affordability",
   },
   {
-    id: "debt-payoff",
-    title: "Debt Payoff Strategy",
-    description:
-      "Optimize paying off multiple debts using snowball or avalanche method",
-    icon: MdTrendingDown,
-    href: "/calculators/debt-payoff",
-  },
-  {
     id: "investment-comparison",
     title: "Investment Comparison",
     description: "Compare returns across equity, debt, gold, FD, and more",
     icon: MdBarChart,
     href: "/calculators/investment-comparison",
   },
+  {
+    id: "goal-planner",
+    title: "Goal-based Planner",
+    description: "Calculate how much to invest to reach your financial goal",
+    icon: MdTrackChanges,
+    href: "/calculators/goal-planner",
+  },
+  {
+    id: "debt-payoff",
+    title: "Debt Payoff Strategy",
+    description:
+      "Optimize paying off multiple debts using snowball or avalanche method",
+    icon: MdTrendingDown,
+    href: "/calculators/debt-payoff",
+  }, 
   {
     id: "tbd-3",
     title: "Calculator 6",
