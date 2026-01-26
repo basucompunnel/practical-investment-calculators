@@ -65,11 +65,11 @@ const calculators = [
   },
   {
     id: "loan-affordability",
-    title: "Loan Affordability",
+    title: "Affordability Calculator",
     description:
       "Calculate affordability for car, phone, home, or personal loans",
     icon: MdCalculate,
-    href: "/calculators/loan-affordability",
+    href: "/calculators/affordability",
   },
   {
     id: "investment-comparison",
@@ -85,14 +85,6 @@ const calculators = [
     icon: MdTrackChanges,
     href: "/calculators/goal-planner",
   },
-  {
-    id: "debt-payoff",
-    title: "Debt Payoff Strategy",
-    description:
-      "Optimize paying off multiple debts using snowball or avalanche method",
-    icon: MdTrendingDown,
-    href: "/calculators/debt-payoff",
-  }, 
   {
     id: "tbd-3",
     title: "Calculator 6",
