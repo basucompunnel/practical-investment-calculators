@@ -9,9 +9,10 @@ interface FormFieldProps {
   arrowStep?: number;
   value: string;
   onChange: (value: string) => void;
+  disabled?: boolean;
 }
 
-export function FormField({ id, label, type = "number", step, arrowStep = 1, value, onChange }: FormFieldProps) {
+export function FormField({ id, label, type = "number", step, arrowStep = 1, value, onChange, disabled = false }: FormFieldProps) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowUp" || e.key === "ArrowDown") {
       e.preventDefault();
@@ -39,6 +40,7 @@ export function FormField({ id, label, type = "number", step, arrowStep = 1, val
         onChange={(e) => onChange(e.target.value)}
         onWheel={(e) => e.currentTarget.blur()}
         onKeyDown={handleKeyDown}
+        disabled={disabled}
         className="rounded-none h-12 text-base [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
       />
     </div>

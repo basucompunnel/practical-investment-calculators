@@ -8,11 +8,9 @@ interface SummaryDataPointProps {
 
 export function SummaryDataPoint({ label, value, size = "normal" }: SummaryDataPointProps) {
   return (
-    <Card className="rounded-none shadow-none border-0">
-      <CardContent className="p-4 space-y-2 bg-muted/50">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className={`font-bold ${size === "large" ? "text-3xl" : "text-2xl"}`}>{value}</p>
-      </CardContent>
-    </Card>
+    <div className="space-y-1">
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
+      <p className={`font-bold ${size === "large" ? "text-3xl" : "text-xl"}`}>{value}</p>
+    </div>
   );
 }

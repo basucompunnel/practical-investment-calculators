@@ -10,10 +10,10 @@ import {
   MdSplitscreen,
   MdCompareArrows,
   MdCalculate,
-  MdQuestionMark,
   MdTrendingDown,
   MdBarChart,
   MdTrackChanges,
+  MdAccountBalance,
 } from "react-icons/md";
 import { FaHome, FaCar } from "react-icons/fa";
 import { IconType } from "react-icons";
@@ -57,11 +57,11 @@ const calculators = [
     href: "/calculators/emi-split",
   },
   {
-    id: "rent-vs-buy",
-    title: "Rent vs Buy Calculator",
-    description: "Find the break-even point between renting and buying",
+    id: "investment-comparison-two",
+    title: "Compare Two Investments",
+    description: "Compare returns, IRR, and growth between two investments",
     icon: MdCompareArrows,
-    href: "/calculators/rent-vs-buy",
+    href: "/calculators/investment-comparison-two",
   },
   {
     id: "loan-affordability",
@@ -86,11 +86,11 @@ const calculators = [
     href: "/calculators/goal-planner",
   },
   {
-    id: "tbd-3",
-    title: "Calculator 6",
-    description: "Yet to be decided",
-    icon: MdQuestionMark,
-    href: "#",
+    id: "retirement-planner",
+    title: "Retirement Planner",
+    description: "Plan your retirement corpus and monthly savings needed",
+    icon: MdAccountBalance,
+    href: "/calculators/retirement-planner",
   },
 ];
 
