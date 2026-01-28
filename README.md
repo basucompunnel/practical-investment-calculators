@@ -2,7 +2,7 @@
 
 A comprehensive suite of financial calculators built with Next.js, designed to help users make informed investment and financial decisions.
 
-![Investment Calculators](./public/screenshot.png)
+![Investment Calculators](https://github.com/basucompunnel/practical-investment-calculators/blob/main/public/screenshot.png?raw=true)
 
 ## Features
 
