@@ -1,4 +1,17 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Practical Investment Calculators
+
+A comprehensive suite of financial calculators built with Next.js, designed to help users make informed investment and financial decisions.
+
+![Investment Calculators](./public/screenshot.png)
+
+## Features
+
+- **EMI Split Calculator** - Calculate EMI paid by rent vs own pocket
+- **Compare Two Investments** - Compare returns, IRR, and growth between two investments with inflation-adjusted values
+- **Affordability Calculator** - Calculate affordability for car, phone, home, or personal loans
+- **Investment Comparison** - Compare returns across equity, debt, gold, FD, and more
+- **Goal-based Planner** - Calculate how much to invest to reach your financial goal
+- **Retirement Planner** - Plan your retirement corpus and monthly savings needed
 
 ## Getting Started
 
