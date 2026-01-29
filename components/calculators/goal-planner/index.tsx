@@ -2,328 +2,47 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FormField } from "@/components/common/FormField";
 import { Button } from "@/components/ui/button";
-import { SummaryDataPoint } from "@/components/common/SummaryDataPoint";
-import { TabSelector } from "@/components/common/TabSelector";
 import { HorizontalBarChart } from "@/components/common/HorizontalBarChart";
+import { InvestmentMode, CalculationMode, ComparisonResults } from "./types";
+import { EXPECTED_RETURNS } from "./constants";
+import { formatCurrency, calculateTimeForInvestmentType, calculateForInvestmentType } from "./utils";
+import { CalculationModeSelector } from "./CalculationModeSelector";
+import { InvestmentModeSelector } from "./InvestmentModeSelector";
+import { GoalDetailsForm } from "./GoalDetailsForm";
+import { ExpectedReturnsForm } from "./ExpectedReturnsForm";
+import { ResultsSummary } from "./ResultsSummary";
 
-type InvestmentMode = "sip" | "stepup" | "lumpsum";
-type CalculationMode = "investment" | "time";
-
-interface GoalResult {
-  name: string;
-  targetAmount: number;
-  requiredMonthly?: number;
-  requiredLumpsum?: number;
-  requiredYears?: number;
-  totalInvested: number;
-  totalReturns: number;
-  expectedReturn: number;
-}
-
-interface ComparisonResults {
-  equity: GoalResult;
-  gold: GoalResult;
-  debt: GoalResult;
-  fd: GoalResult;
-}
-
-// Expected annual returns for different investment types
-const EXPECTED_RETURNS = {
-  equity: 12,
-  gold: 10,
-  debt: 7,
-  fd: 6.5,
-};
-
-const INVESTMENT_NAMES = {
-  equity: "Equity Fund",
-  gold: "Gold",
-  debt: "Debt Fund",
-  fd: "Fixed Deposit",
-};
-
-const INVESTMENT_MODE_OPTIONS = [
-  { value: "sip", label: "SIP" },
-  { value: "stepup", label: "Step-up SIP" },
-  { value: "lumpsum", label: "Lumpsum" },
-];
-
-const CALCULATION_MODE_OPTIONS = [
-  { value: "investment", label: "Calculate Investment" },
-  { value: "time", label: "Calculate Time" },
-];
-
-// Subcomponent: Calculation Mode Selector
-function CalculationModeSelector({
-  selectedMode,
-  onModeChange,
-}: {
-  selectedMode: CalculationMode;
-  onModeChange: (mode: CalculationMode) => void;
-}) {
-  return (
-    <div className="mb-6">
-      <TabSelector
-        options={CALCULATION_MODE_OPTIONS}
-        selected={selectedMode}
-        onChange={(value) => onModeChange(value as CalculationMode)}
-        columns={2}
-      />
-    </div>
-  );
-}
-
-// Subcomponent: Investment Mode Selector
-function InvestmentModeSelector({
-  selectedMode,
-  onModeChange,
-}: {
-  selectedMode: InvestmentMode;
-  onModeChange: (mode: InvestmentMode) => void;
-}) {
-  return (
-    <div className="mb-8">
-      <TabSelector
-        options={INVESTMENT_MODE_OPTIONS}
-        selected={selectedMode}
-        onChange={(value) => onModeChange(value as InvestmentMode)}
-        columns={3}
-      />
-    </div>
-  );
-}
-
-// Subcomponent: Goal Details Form
-function GoalDetailsForm({
-  calculationMode,
-  selectedMode,
-  targetAmount,
-  setTargetAmount,
-  tenure,
-  setTenure,
-  monthlyAmount,
-  setMonthlyAmount,
-  lumpsumAmount,
-  setLumpsumAmount,
-  stepUpPercentage,
-  setStepUpPercentage,
-}: {
-  calculationMode: CalculationMode;
-  selectedMode: InvestmentMode;
-  targetAmount: string;
-  setTargetAmount: (value: string) => void;
-  tenure: string;
-  setTenure: (value: string) => void;
-  monthlyAmount: string;
-  setMonthlyAmount: (value: string) => void;
-  lumpsumAmount: string;
-  setLumpsumAmount: (value: string) => void;
-  stepUpPercentage: string;
-  setStepUpPercentage: (value: string) => void;
-}) {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <FormField
-        id="targetAmount"
-        label="Target Amount (₹)"
-        arrowStep={100000}
-        value={targetAmount}
-        onChange={setTargetAmount}
-      />
-      {calculationMode === "investment" ? (
-        <FormField
-          id="tenure"
-          label="Time Period (years)"
-          arrowStep={1}
-          value={tenure}
-          onChange={setTenure}
-        />
-      ) : (
-        selectedMode === "lumpsum" ? (
-          <FormField
-            id="lumpsumAmount"
-            label="Lumpsum Amount (₹)"
-            arrowStep={10000}
-            value={lumpsumAmount}
-            onChange={setLumpsumAmount}
-          />
-        ) : (
-          <FormField
-            id="monthlyAmount"
-            label="Monthly SIP (₹)"
-            arrowStep={1000}
-            value={monthlyAmount}
-            onChange={setMonthlyAmount}
-          />
-        )
-      )}
-      {selectedMode === "stepup" && (
-        <FormField
-          id="stepUpPercentage"
-          label="Annual Step-up (%)"
-          step="0.1"
-          arrowStep={1}
-          value={stepUpPercentage}
-          onChange={setStepUpPercentage}
-        />
-      )}
-    </div>
-  );
-}
-
-// Subcomponent: Expected Returns Form
-function ExpectedReturnsForm({
-  equityReturn,
-  setEquityReturn,
-  goldReturn,
-  setGoldReturn,
-  debtReturn,
-  setDebtReturn,
-  fdReturn,
-  setFdReturn,
-}: {
-  equityReturn: string;
-  setEquityReturn: (value: string) => void;
-  goldReturn: string;
-  setGoldReturn: (value: string) => void;
-  debtReturn: string;
-  setDebtReturn: (value: string) => void;
-  fdReturn: string;
-  setFdReturn: (value: string) => void;
-}) {
-  return (
-    <div className="border-t pt-6">
-      <h3 className="text-lg font-semibold mb-4">Expected Annual Returns (%)</h3>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <FormField
-          id="equityReturn"
-          label="Equity Fund"
-          step="0.1"
-          arrowStep={0.5}
-          value={equityReturn}
-          onChange={setEquityReturn}
-        />
-        <FormField
-          id="goldReturn"
-          label="Gold"
-          step="0.1"
-          arrowStep={0.5}
-          value={goldReturn}
-          onChange={setGoldReturn}
-        />
-        <FormField
-          id="debtReturn"
-          label="Debt Fund"
-          step="0.1"
-          arrowStep={0.5}
-          value={debtReturn}
-          onChange={setDebtReturn}
-        />
-        <FormField
-          id="fdReturn"
-          label="Fixed Deposit"
-          step="0.1"
-          arrowStep={0.5}
-          value={fdReturn}
-          onChange={setFdReturn}
-        />
-      </div>
-    </div>
-  );
-}
-
-// Subcomponent: Results Summary
-function ResultsSummary({
-  results,
-  calculationMode,
-  selectedMode,
-  formatCurrency,
-}: {
-  results: ComparisonResults;
-  calculationMode: CalculationMode;
-  selectedMode: InvestmentMode;
-  formatCurrency: (value: number) => string;
-}) {
-  return (
-    <div className="space-y-4">
-      <div className="text-lg font-semibold">
-        Target Amount: {formatCurrency(results.equity.targetAmount)}
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {(Object.keys(results) as Array<keyof typeof results>).map((key) => {
-          const result = results[key];
-          const isLowest = Object.values(results).every(
-            (r) => result.totalInvested <= r.totalInvested
-          );
-
-          return (
-            <Card
-              key={key}
-              className={`rounded-none ${isLowest ? "border-2 border-primary" : ""}`}
-            >
-              <CardHeader className="bg-muted/50">
-                <CardTitle className="text-xl flex items-center justify-between">
-                  <span>{result.name}</span>
-                  {isLowest && (
-                    <span className="text-sm font-normal bg-primary text-primary-foreground px-3 py-1 rounded-none">
-                      Lowest Investment
-                    </span>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <SummaryDataPoint
-                    label="Expected Return"
-                    value={`${result.expectedReturn}% p.a.`}
-                  />
-                  {calculationMode === "investment" ? (
-                    <SummaryDataPoint
-                      label={selectedMode === "lumpsum" ? "Lumpsum" : "Monthly SIP"}
-                      value={formatCurrency(
-                        selectedMode === "lumpsum"
-                          ? (result.requiredLumpsum || 0)
-                          : (result.requiredMonthly || 0)
-                      )}
-                      size="large"
-                    />
-                  ) : (
-                    <SummaryDataPoint
-                      label="Time Required"
-                      value={`${(result.requiredYears || 0).toFixed(1)} years`}
-                      size="large"
-                    />
-                  )}
-                  <SummaryDataPoint
-                    label="Total Investment"
-                    value={formatCurrency(result.totalInvested)}
-                  />
-                  <SummaryDataPoint
-                    label="Expected Returns"
-                    value={formatCurrency(result.totalReturns)}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
+/**
+ * Goal-based Investment Planner Calculator
+ * 
+ * A comprehensive calculator that helps users plan their financial goals by:
+ * 1. Calculating required investment (SIP/Step-up/Lumpsum) for a given time period
+ * 2. Calculating required time period for a given investment amount
+ * 
+ * Compares four investment types (Equity, Gold, Debt, FD) side-by-side to help
+ * users make informed decisions based on their risk appetite and return expectations.
+ * 
+ * Features:
+ * - Dual calculation modes (investment amount or time period)
+ * - Three investment strategies (SIP, Step-up SIP, Lumpsum)
+ * - Customizable expected returns for each investment type
+ * - Visual comparison with bar charts and summary cards
+ * - Highlights the most efficient investment option
+ */
 export default function GoalPlannerCalculator() {
+  // Calculation and investment mode selection
   const [calculationMode, setCalculationMode] = useState<CalculationMode>("investment");
   const [selectedMode, setSelectedMode] = useState<InvestmentMode>("sip");
-  const [targetAmount, setTargetAmount] = useState<string>("5000000");
-  const [tenure, setTenure] = useState<string>("10");
-  const [monthlyAmount, setMonthlyAmount] = useState<string>("10000");
-  const [lumpsumAmount, setLumpsumAmount] = useState<string>("500000");
-  const [stepUpPercentage, setStepUpPercentage] = useState<string>("10");
+  
+  // Goal parameters
+  const [targetAmount, setTargetAmount] = useState<string>("5000000");      // Default: ₹50 lakhs
+  const [tenure, setTenure] = useState<string>("10");                       // Default: 10 years
+  const [monthlyAmount, setMonthlyAmount] = useState<string>("10000");     // Default: ₹10,000/month
+  const [lumpsumAmount, setLumpsumAmount] = useState<string>("500000");    // Default: ₹5 lakhs
+  const [stepUpPercentage, setStepUpPercentage] = useState<string>("10"); // Default: 10% annual increase
 
-  // Expected returns for each investment type
+  // Expected returns for each investment type (customizable)
   const [equityReturn, setEquityReturn] = useState<string>(
     EXPECTED_RETURNS.equity.toString()
   );
@@ -337,180 +56,98 @@ export default function GoalPlannerCalculator() {
     EXPECTED_RETURNS.fd.toString()
   );
 
+  // Calculation results for all investment types
   const [results, setResults] = useState<ComparisonResults | null>(null);
 
-  // Reset results when any input changes
+  // Reset results when any input changes to ensure fresh calculations
   useEffect(() => {
     setResults(null);
   }, [calculationMode, selectedMode, targetAmount, tenure, monthlyAmount, lumpsumAmount, stepUpPercentage, equityReturn, goldReturn, debtReturn, fdReturn]);
 
-  const calculateTimeForInvestmentType = (
-    type: keyof typeof EXPECTED_RETURNS,
-    customReturn: number
-  ): GoalResult => {
-    const target = parseFloat(targetAmount);
-    const annualReturn = customReturn / 100;
-    const monthlyReturn = Math.pow(1 + annualReturn, 1 / 12) - 1;
-
-    if (selectedMode === "lumpsum") {
-      const lumpsum = parseFloat(lumpsumAmount);
-      // FV = PV × (1 + r)^n
-      // Rearranged: n = ln(FV/PV) / ln(1 + r)
-      const years = Math.log(target / lumpsum) / Math.log(1 + annualReturn);
-      const totalInvested = lumpsum;
-
-      return {
-        name: INVESTMENT_NAMES[type],
-        targetAmount: target,
-        requiredYears: years,
-        requiredLumpsum: lumpsum,
-        totalInvested,
-        totalReturns: target - totalInvested,
-        expectedReturn: customReturn,
-      };
-    } else if (selectedMode === "sip") {
-      const monthly = parseFloat(monthlyAmount);
-      // FV = PMT × [(1 + r)^n - 1] / r
-      // Rearranged: n = ln(1 + FV×r/PMT) / ln(1 + r)
-      const months = Math.log(1 + (target * monthlyReturn) / monthly) / Math.log(1 + monthlyReturn);
-      const years = months / 12;
-      const totalInvested = monthly * months;
-
-      return {
-        name: INVESTMENT_NAMES[type],
-        targetAmount: target,
-        requiredYears: years,
-        requiredMonthly: monthly,
-        totalInvested,
-        totalReturns: target - totalInvested,
-        expectedReturn: customReturn,
-      };
-    } else {
-      // Step-up SIP time calculation (iterative approach)
-      const monthly = parseFloat(monthlyAmount);
-      const stepUp = parseFloat(stepUpPercentage) / 100;
-      const monthlyStepUp = Math.pow(1 + stepUp, 1 / 12) - 1;
-      
-      let months = 0;
-      let currentValue = 0;
-      let totalInvested = 0;
-      const maxMonths = 1200; // 100 years max
-      
-      while (currentValue < target && months < maxMonths) {
-        const currentSIP = monthly * Math.pow(1 + monthlyStepUp, months);
-        totalInvested += currentSIP;
-        currentValue = currentValue * (1 + monthlyReturn) + currentSIP;
-        months++;
-      }
-      
-      const years = months / 12;
-
-      return {
-        name: INVESTMENT_NAMES[type],
-        targetAmount: target,
-        requiredYears: years,
-        requiredMonthly: monthly,
-        totalInvested,
-        totalReturns: target - totalInvested,
-        expectedReturn: customReturn,
-      };
-    }
-  };
-
-  const calculateForInvestmentType = (
-    type: keyof typeof EXPECTED_RETURNS,
-    customReturn: number
-  ): GoalResult => {
-    const target = parseFloat(targetAmount);
-    const years = parseFloat(tenure);
-    const annualReturn = customReturn / 100;
-    const monthlyReturn = Math.pow(1 + annualReturn, 1 / 12) - 1;
-
-    if (selectedMode === "sip") {
-      const months = years * 12;
-      const requiredMonthly =
-        (target * monthlyReturn) / (Math.pow(1 + monthlyReturn, months) - 1);
-      const totalInvested = requiredMonthly * months;
-
-      return {
-        name: INVESTMENT_NAMES[type],
-        targetAmount: target,
-        requiredMonthly,
-        totalInvested,
-        totalReturns: target - totalInvested,
-        expectedReturn: customReturn,
-      };
-    } else if (selectedMode === "stepup") {
-      const months = years * 12;
-      const stepUp = parseFloat(stepUpPercentage) / 100;
-      const monthlyStepUp = Math.pow(1 + stepUp, 1 / 12) - 1;
-
-      // For step-up SIP, we need to solve for the initial monthly SIP
-      // FV = PMT × [(1 + r)^n - (1 + s)^n] / (r - s)
-      // Rearranged: PMT = FV × (r - s) / [(1 + r)^n - (1 + s)^n]
-      let requiredMonthly: number;
-      let totalInvested = 0;
-
-      if (Math.abs(monthlyReturn - monthlyStepUp) < 0.00001) {
-        // When rates are equal: FV = n × PMT × (1 + r)^(n-1)
-        // So: PMT = FV / [n × (1 + r)^(n-1)]
-        requiredMonthly = target / (months * Math.pow(1 + monthlyReturn, months - 1));
-      } else {
-        const powerR = Math.pow(1 + monthlyReturn, months);
-        const powerS = Math.pow(1 + monthlyStepUp, months);
-        requiredMonthly = (target * (monthlyReturn - monthlyStepUp)) / (powerR - powerS);
-      }
-
-      // Calculate total invested with step-up
-      for (let i = 0; i < months; i++) {
-        totalInvested += requiredMonthly * Math.pow(1 + monthlyStepUp, i);
-      }
-
-      return {
-        name: INVESTMENT_NAMES[type],
-        targetAmount: target,
-        requiredMonthly,
-        totalInvested,
-        totalReturns: target - totalInvested,
-        expectedReturn: customReturn,
-      };
-    } else {
-      const requiredLumpsum = target / Math.pow(1 + annualReturn, years);
-      const totalInvested = requiredLumpsum;
-
-      return {
-        name: INVESTMENT_NAMES[type],
-        targetAmount: target,
-        requiredLumpsum,
-        totalInvested,
-        totalReturns: target - totalInvested,
-        expectedReturn: customReturn,
-      };
-    }
-  };
-
+  /**
+   * Main calculation trigger function
+   * 
+   * Performs calculations for all four investment types based on the selected
+   * calculation mode (investment amount or time period) and updates results state.
+   */
   const calculateGoal = () => {
     if (calculationMode === "time") {
+      // Calculate time required for each investment type
       setResults({
-        equity: calculateTimeForInvestmentType("equity", parseFloat(equityReturn)),
-        gold: calculateTimeForInvestmentType("gold", parseFloat(goldReturn)),
-        debt: calculateTimeForInvestmentType("debt", parseFloat(debtReturn)),
-        fd: calculateTimeForInvestmentType("fd", parseFloat(fdReturn)),
+        equity: calculateTimeForInvestmentType(
+          "equity",
+          parseFloat(equityReturn),
+          targetAmount,
+          selectedMode,
+          monthlyAmount,
+          lumpsumAmount,
+          stepUpPercentage
+        ),
+        gold: calculateTimeForInvestmentType(
+          "gold",
+          parseFloat(goldReturn),
+          targetAmount,
+          selectedMode,
+          monthlyAmount,
+          lumpsumAmount,
+          stepUpPercentage
+        ),
+        debt: calculateTimeForInvestmentType(
+          "debt",
+          parseFloat(debtReturn),
+          targetAmount,
+          selectedMode,
+          monthlyAmount,
+          lumpsumAmount,
+          stepUpPercentage
+        ),
+        fd: calculateTimeForInvestmentType(
+          "fd",
+          parseFloat(fdReturn),
+          targetAmount,
+          selectedMode,
+          monthlyAmount,
+          lumpsumAmount,
+          stepUpPercentage
+        ),
       });
     } else {
+      // Calculate required investment for each investment type
       setResults({
-        equity: calculateForInvestmentType("equity", parseFloat(equityReturn)),
-        gold: calculateForInvestmentType("gold", parseFloat(goldReturn)),
-        debt: calculateForInvestmentType("debt", parseFloat(debtReturn)),
-        fd: calculateForInvestmentType("fd", parseFloat(fdReturn)),
+        equity: calculateForInvestmentType(
+          "equity",
+          parseFloat(equityReturn),
+          targetAmount,
+          tenure,
+          selectedMode,
+          stepUpPercentage
+        ),
+        gold: calculateForInvestmentType(
+          "gold",
+          parseFloat(goldReturn),
+          targetAmount,
+          tenure,
+          selectedMode,
+          stepUpPercentage
+        ),
+        debt: calculateForInvestmentType(
+          "debt",
+          parseFloat(debtReturn),
+          targetAmount,
+          tenure,
+          selectedMode,
+          stepUpPercentage
+        ),
+        fd: calculateForInvestmentType(
+          "fd",
+          parseFloat(fdReturn),
+          targetAmount,
+          tenure,
+          selectedMode,
+          stepUpPercentage
+        ),
       });
     }
-  };  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(value);
   };
 
   return (
@@ -527,9 +164,9 @@ export default function GoalPlannerCalculator() {
         onModeChange={setSelectedMode}
       />
 
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="text-2xl">Goal Details</CardTitle>
+      <Card className="rounded-none border-2 border-primary/20">
+        <CardHeader className="bg-muted/50 py-4">
+          <CardTitle className="text-lg font-semibold uppercase tracking-wide">Goal Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6 p-6">
           <GoalDetailsForm

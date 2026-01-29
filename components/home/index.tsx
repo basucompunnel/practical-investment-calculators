@@ -50,11 +50,25 @@ function CalculatorCard({ calculator }: { calculator: Calculator }) {
 
 const calculators = [
   {
-    id: "emi-split",
-    title: "EMI Split Calculator",
-    description: "Calculate EMI paid by rent vs own pocket",
-    icon: MdSplitscreen,
-    href: "/calculators/emi-split",
+    id: "goal-planner",
+    title: "Goal-based Planner",
+    description: "Calculate how much to invest to reach your financial goal",
+    icon: MdTrackChanges,
+    href: "/calculators/goal-planner",
+  },
+  {
+    id: "retirement-planner",
+    title: "Retirement Planner",
+    description: "Plan your retirement corpus and monthly savings needed",
+    icon: MdAccountBalance,
+    href: "/calculators/retirement-planner",
+  },
+  {
+    id: "investment-comparison",
+    title: "Investment Comparison",
+    description: "Compare returns across equity, debt, gold, FD, and more",
+    icon: MdBarChart,
+    href: "/calculators/investment-comparison",
   },
   {
     id: "investment-comparison-two",
@@ -72,25 +86,11 @@ const calculators = [
     href: "/calculators/affordability",
   },
   {
-    id: "investment-comparison",
-    title: "Investment Comparison",
-    description: "Compare returns across equity, debt, gold, FD, and more",
-    icon: MdBarChart,
-    href: "/calculators/investment-comparison",
-  },
-  {
-    id: "goal-planner",
-    title: "Goal-based Planner",
-    description: "Calculate how much to invest to reach your financial goal",
-    icon: MdTrackChanges,
-    href: "/calculators/goal-planner",
-  },
-  {
-    id: "retirement-planner",
-    title: "Retirement Planner",
-    description: "Plan your retirement corpus and monthly savings needed",
-    icon: MdAccountBalance,
-    href: "/calculators/retirement-planner",
+    id: "emi-split",
+    title: "EMI Split Calculator",
+    description: "Calculate EMI paid by rent vs own pocket",
+    icon: MdSplitscreen,
+    href: "/calculators/emi-split",
   },
 ];
 

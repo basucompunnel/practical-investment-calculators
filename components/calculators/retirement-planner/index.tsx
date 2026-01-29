@@ -4,400 +4,36 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormField } from "@/components/common/FormField";
 import { Button } from "@/components/ui/button";
-import { SummaryDataPoint } from "@/components/common/SummaryDataPoint";
-import { DataTable } from "@/components/common/DataTable";
-import {
-  ComposedChart,
-  Bar,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  Area,
-  AreaChart,
-} from "recharts";
+import { RetirementResult } from "./types";
+import { DEFAULTS, STEPS } from "./constants";
+import { SummaryCards } from "./SummaryCards";
+import { AccumulationPhaseChart } from "./AccumulationPhaseChart";
+import { PostRetirementChart } from "./PostRetirementChart";
 
-interface RetirementResult {
-  requiredCorpus: number;
-  requiredCorpusReal: number;
-  currentAge: number;
-  retirementAge: number;
-  yearsToRetirement: number;
-  monthlyInvestmentNeeded: number;
-  totalInvestment: number;
-  totalReturns: number;
-  inflationAdjustedExpenses: number;
-  currentExpensesEquivalent: number;
-  yearlyBreakdown: Array<{
-    year: number;
-    age: number;
-    invested: number;
-    corpusValue: number;
-    corpusValueReal: number;
-    totalInvested: number;
-    totalInvestedReal: number;
-  }>;
-  postRetirementBreakdown: Array<{
-    year: number;
-    age: number;
-    openingBalance: number;
-    openingBalanceReal: number;
-    withdrawal: number;
-    withdrawalReal: number;
-    growthOnBalance: number;
-    closingBalance: number;
-    closingBalanceReal: number;
-  }>;
-}
-
-const DEFAULTS = {
-  currentAge: 30,
-  retirementAge: 60,
-  lifeExpectancy: 85,
-  currentMonthlyExpenses: 50_000,
-  inflationRate: 6,
-  preRetirementReturn: 12,
-  postRetirementReturn: 8,
-  currentSavings: 0,
-} as const;
-
-const STEPS = {
-  age: 1,
-  expenses: 5_000,
-  rate: 0.5,
-  savings: 50_000,
-} as const;
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(value);
-};
-
-const formatShortCurrency = (value: number) => {
-  if (value >= 10000000) {
-    return `₹${(value / 10000000).toFixed(1)}Cr`;
-  } else if (value >= 100000) {
-    return `₹${(value / 100000).toFixed(1)}L`;
-  }
-  return formatCurrency(value);
-};
-
-// Summary Cards Component
-function SummaryCards({ result }: { result: RetirementResult }) {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <Card className="rounded-none border-2 border-primary">
-        <CardHeader className="bg-primary text-primary-foreground py-4">
-          <CardTitle className="text-sm font-semibold uppercase tracking-wide">Corpus at Retirement</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6 space-y-6">
-          <div>
-            <SummaryDataPoint
-              label="Required Corpus"
-              value={formatCurrency(result.requiredCorpus)}
-              size="large"
-            />
-            <p className="text-xs text-muted-foreground mt-2">Nominal amount</p>
-          </div>
-          <div className="pt-4 border-t border-border">
-            <SummaryDataPoint
-              label="Monthly Expenses"
-              value={formatCurrency(result.inflationAdjustedExpenses)}
-            />
-            <p className="text-xs text-muted-foreground mt-2">At retirement</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="rounded-none border-2 border-amber-600">
-        <CardHeader className="bg-amber-600 text-white py-4">
-          <CardTitle className="text-sm font-semibold uppercase tracking-wide">In Today's Value</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6 space-y-6">
-          <div>
-            <SummaryDataPoint
-              label="Required Corpus"
-              value={formatCurrency(result.requiredCorpusReal)}
-              size="large"
-            />
-            <p className="text-xs text-amber-600 font-semibold mt-2">Inflation-adjusted</p>
-          </div>
-          <div className="pt-4 border-t border-border">
-            <SummaryDataPoint
-              label="Monthly Expenses"
-              value={formatCurrency(result.currentExpensesEquivalent)}
-            />
-            <p className="text-xs text-amber-600 font-semibold mt-2">In today's money</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="rounded-none border-2 border-primary/20">
-        <CardHeader className="bg-muted/50 py-4">
-          <CardTitle className="text-sm font-semibold uppercase tracking-wide">Monthly Investment</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6 space-y-6">
-          <div>
-            <SummaryDataPoint
-              label="SIP Required"
-              value={formatCurrency(result.monthlyInvestmentNeeded)}
-              size="large"
-            />
-            <p className="text-xs text-muted-foreground mt-2">Per month</p>
-          </div>
-          <div className="pt-4 border-t border-border space-y-4">
-            <SummaryDataPoint
-              label="Total Investment"
-              value={formatCurrency(result.totalInvestment)}
-            />
-            <SummaryDataPoint
-              label="Total Returns"
-              value={formatCurrency(result.totalReturns)}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="rounded-none border-2 border-primary/20">
-        <CardHeader className="bg-muted/50 py-4">
-          <CardTitle className="text-sm font-semibold uppercase tracking-wide">Timeline</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6 space-y-6">
-          <div>
-            <SummaryDataPoint 
-              label="Investment Period" 
-              value={`${result.yearsToRetirement} years`}
-              size="large"
-            />
-            <p className="text-xs text-muted-foreground mt-2">Until retirement</p>
-          </div>
-          <div className="pt-4 border-t border-border space-y-4">
-            <SummaryDataPoint label="Current Age" value={`${result.currentAge} years`} />
-            <SummaryDataPoint label="Retirement Age" value={`${result.retirementAge} years`} />
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-// Accumulation Phase Component
-function AccumulationPhaseChart({ result }: { result: RetirementResult }) {
-  return (
-    <Card className="rounded-none border-2 border-primary/20">
-      <CardHeader className="bg-muted/50 py-4">
-        <CardTitle className="text-lg font-semibold uppercase tracking-wide">Wealth Accumulation Phase</CardTitle>
-      </CardHeader>
-      <CardContent className="p-6 space-y-6">
-        <div className="w-full h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={result.yearlyBreakdown}
-              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis
-                dataKey="age"
-                label={{ value: "Age", position: "insideBottom", offset: -10 }}
-                className="text-sm"
-              />
-              <YAxis
-                label={{ value: "Amount (₹)", angle: -90, position: "insideLeft" }}
-                tickFormatter={(value) => formatShortCurrency(value)}
-                className="text-sm"
-              />
-              <Tooltip
-                formatter={(value) => formatCurrency(Number(value))}
-                contentStyle={{
-                  backgroundColor: "hsl(var(--background))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "6px",
-                }}
-              />
-              <Legend wrapperStyle={{ paddingTop: "20px" }} />
-              <Area
-                type="monotone"
-                dataKey="totalInvested"
-                stackId="1"
-                stroke="#8b5cf6"
-                fill="#8b5cf6"
-                name="Total Invested (Nominal)"
-              />
-              <Area
-                type="monotone"
-                dataKey="corpusValue"
-                stroke="#10b981"
-                fill="#10b981"
-                fillOpacity={0.6}
-                name="Corpus Value (Nominal)"
-              />
-              <Line
-                type="monotone"
-                dataKey="corpusValueReal"
-                stroke="#f59e0b"
-                strokeWidth={2}
-                strokeDasharray="5 5"
-                name="Corpus Value (Real)"
-                dot={false}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-
-        <DataTable
-          data={result.yearlyBreakdown}
-          columns={[
-            { key: "year", header: "Year", align: "left" },
-            { key: "age", header: "Age", align: "left" },
-            {
-              key: "invested",
-              header: "Annual Investment",
-              align: "right",
-              render: (value) => formatCurrency(value as number),
-            },
-            {
-              key: "totalInvested",
-              header: "Total Invested (Nominal)",
-              align: "right",
-              className: "text-purple-600 font-medium",
-              render: (value) => formatCurrency(value as number),
-            },
-            {
-              key: "corpusValue",
-              header: "Corpus (Nominal)",
-              align: "right",
-              className: "text-green-600 font-medium",
-              render: (value) => formatCurrency(value as number),
-            },
-            {
-              key: "corpusValueReal",
-              header: "Corpus (Real)",
-              align: "right",
-              className: "text-amber-600 font-medium",
-              render: (value) => formatCurrency(value as number),
-            },
-          ]}
-          getRowKey={(row) => row.year}
-        />
-      </CardContent>
-    </Card>
-  );
-}
-
-// Post-Retirement Phase Component
-function PostRetirementChart({ result }: { result: RetirementResult }) {
-  return (
-    <Card className="rounded-none border-2 border-primary/20">
-      <CardHeader className="bg-muted/50 py-4">
-        <CardTitle className="text-lg font-semibold uppercase tracking-wide">Post-Retirement Withdrawal Phase</CardTitle>
-      </CardHeader>
-      <CardContent className="p-6 space-y-6">
-        <div className="w-full h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart
-              data={result.postRetirementBreakdown}
-              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis
-                dataKey="age"
-                label={{ value: "Age", position: "insideBottom", offset: -10 }}
-                className="text-sm"
-              />
-              <YAxis
-                label={{ value: "Amount (₹)", angle: -90, position: "insideLeft" }}
-                tickFormatter={(value) => formatShortCurrency(value)}
-                className="text-sm"
-              />
-              <Tooltip
-                formatter={(value) => formatCurrency(Number(value))}
-                contentStyle={{
-                  backgroundColor: "hsl(var(--background))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "6px",
-                }}
-              />
-              <Legend wrapperStyle={{ paddingTop: "20px" }} />
-              <Bar
-                dataKey="withdrawal"
-                fill="#ec4899"
-                name="Annual Withdrawal (Nominal)"
-                radius={[4, 4, 0, 0]}
-              />
-              <Line
-                type="monotone"
-                dataKey="closingBalance"
-                stroke="#2563eb"
-                strokeWidth={2}
-                name="Remaining Corpus (Nominal)"
-                dot={{ fill: "#2563eb", r: 4 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="closingBalanceReal"
-                stroke="#f59e0b"
-                strokeWidth={2}
-                strokeDasharray="5 5"
-                name="Remaining Corpus (Real)"
-                dot={{ fill: "#f59e0b", r: 3 }}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-
-        <DataTable
-          data={result.postRetirementBreakdown}
-          columns={[
-            { key: "year", header: "Year", align: "left" },
-            { key: "age", header: "Age", align: "left" },
-            {
-              key: "openingBalance",
-              header: "Opening Balance (Nominal)",
-              align: "right",
-              render: (value) => formatCurrency(value as number),
-            },
-            {
-              key: "withdrawal",
-              header: "Withdrawal (Nominal)",
-              align: "right",
-              className: "text-pink-600 font-medium",
-              render: (value) => formatCurrency(value as number),
-            },
-            {
-              key: "withdrawalReal",
-              header: "Withdrawal (Real)",
-              align: "right",
-              className: "text-amber-600 font-medium",
-              render: (value) => formatCurrency(value as number),
-            },
-            {
-              key: "closingBalance",
-              header: "Closing Balance (Nominal)",
-              align: "right",
-              render: (value) => formatCurrency(value as number),
-            },
-            {
-              key: "closingBalanceReal",
-              header: "Closing Balance (Real)",
-              align: "right",
-              className: "text-amber-600 font-medium",
-              render: (value) => formatCurrency(value as number),
-            },
-          ]}
-          getRowKey={(row) => row.year}
-        />
-      </CardContent>
-    </Card>
-  );
-}
-
+/**
+ * Retirement Planner Calculator
+ * 
+ * A comprehensive retirement planning tool that calculates:
+ * 1. Required retirement corpus based on current expenses and inflation
+ * 2. Monthly SIP needed to accumulate the corpus
+ * 3. Year-by-year wealth accumulation projections
+ * 4. Post-retirement withdrawal sustainability analysis
+ * 
+ * Key Features:
+ * - Inflation-adjusted expense projections
+ * - Dual return rates (pre and post-retirement)
+ * - Real value calculations (today's money equivalent)
+ * - Accounts for existing savings
+ * - Detailed year-by-year breakdowns for both phases
+ * 
+ * Methodology:
+ * - Uses annuity due formula for retirement corpus calculation
+ * - Accounts for different investment strategies pre vs post-retirement
+ * - Shows both nominal (future) and real (inflation-adjusted) values
+ * - Validates corpus sustainability through life expectancy
+ */
 export default function RetirementPlanner() {
+  // User input state - all stored as strings for form field compatibility
   const [currentAge, setCurrentAge] = useState<string>(String(DEFAULTS.currentAge));
   const [retirementAge, setRetirementAge] = useState<string>(String(DEFAULTS.retirementAge));
   const [lifeExpectancy, setLifeExpectancy] = useState<string>(String(DEFAULTS.lifeExpectancy));
@@ -413,8 +49,10 @@ export default function RetirementPlanner() {
   );
   const [currentSavings, setCurrentSavings] = useState<string>(String(DEFAULTS.currentSavings));
 
+  // Calculation results - null until user clicks calculate
   const [result, setResult] = useState<RetirementResult | null>(null);
 
+  // Reset results when any input changes to prompt recalculation
   useEffect(() => {
     setResult(null);
   }, [
@@ -428,7 +66,22 @@ export default function RetirementPlanner() {
     currentSavings,
   ]);
 
+  /**
+   * Main retirement calculation function
+   * 
+   * Performs comprehensive retirement planning calculations in several steps:
+   * 1. Calculate inflation-adjusted expenses at retirement
+   * 2. Calculate required retirement corpus using annuity formula
+   * 3. Account for existing savings growth
+   * 4. Calculate monthly SIP needed to bridge the gap
+   * 5. Build year-by-year accumulation projections
+   * 6. Build year-by-year withdrawal sustainability analysis
+   * 
+   * All calculations consider both nominal (future value) and real (today's value)
+   * perspectives to help users understand purchasing power.
+   */
   const calculateRetirement = () => {
+    // Parse all input values
     const age = parseFloat(currentAge);
     const retAge = parseFloat(retirementAge);
     const lifeExp = parseFloat(lifeExpectancy);
@@ -438,26 +91,39 @@ export default function RetirementPlanner() {
     const postRetRate = parseFloat(postRetirementReturn) / 100;
     const savings = parseFloat(currentSavings);
 
-    const yearsToRetirement = retAge - age;
-    const yearsInRetirement = lifeExp - retAge;
+    // Calculate planning horizons
+    const yearsToRetirement = retAge - age;  // Accumulation phase duration
+    const yearsInRetirement = lifeExp - retAge;  // Withdrawal phase duration
 
-    // Calculate inflation-adjusted monthly expenses at retirement
+    // Step 1: Calculate inflation-adjusted monthly expenses at retirement
+    // Future expenses = Current expenses × (1 + inflation)^years
     const inflationAdjustedExpenses = monthlyExp * Math.pow(1 + inflation, yearsToRetirement);
     const annualExpensesAtRetirement = inflationAdjustedExpenses * 12;
 
-    // Calculate required corpus using inflation-adjusted annuity
-    // Using annuity due formula (withdrawals at beginning of year): PV = PMT * [(1 - (1 + r)^-n) / r] * (1 + r)
+    // Step 2: Calculate required retirement corpus using annuity due formula
+    // Annuity Due: PV = PMT × [(1 - (1 + r)^-n) / r] × (1 + r)
+    // Where:
+    // - PV = Present Value (required corpus at retirement)
+    // - PMT = Annual payment (inflation-adjusted annual expenses)
+    // - r = Real return rate (post-retirement return adjusted for inflation)
+    // - n = Number of years in retirement
+    // Annuity due is used because expenses are withdrawn at the beginning of each year
     const realReturnRate = (1 + postRetRate) / (1 + inflation) - 1;
     const requiredCorpus =
       annualExpensesAtRetirement * ((1 - Math.pow(1 + realReturnRate, -yearsInRetirement)) / realReturnRate) * (1 + realReturnRate);
 
-    // Calculate future value of current savings at retirement
+    // Step 3: Calculate future value of current savings at retirement
+    // FV = PV × (1 + r)^n
     const futureValueOfSavings = savings * Math.pow(1 + preRetRate, yearsToRetirement);
 
-    // Adjust required corpus for existing savings
+    // Step 4: Adjust required corpus for existing savings
+    // Only need to accumulate the difference between required and projected savings
     const corpusNeeded = Math.max(0, requiredCorpus - futureValueOfSavings);
 
-    // Calculate monthly SIP needed
+    // Step 5: Calculate monthly SIP needed using future value of annuity due formula
+    // FV = PMT × [((1 + r)^n - 1) / r] × (1 + r)
+    // Rearranged: PMT = FV / [((1 + r)^n - 1) / r] × (1 + r)
+    // SIP is assumed to be made at the beginning of each month (annuity due)
     const monthlyRate = preRetRate / 12;
     const months = yearsToRetirement * 12;
     const monthlyInvestmentNeeded =
@@ -466,21 +132,28 @@ export default function RetirementPlanner() {
     const totalInvestment = monthlyInvestmentNeeded * months + savings;
     const totalReturns = requiredCorpus - totalInvestment;
 
-    // Calculate real value of required corpus (in today's money)
+    // Calculate real (inflation-adjusted) value of required corpus
+    // Shows what the corpus is worth in today's purchasing power
     const inflationFactorAtRetirement = Math.pow(1 + inflation, yearsToRetirement);
     const requiredCorpusReal = requiredCorpus / inflationFactorAtRetirement;
     const currentExpensesEquivalent = monthlyExp;
 
-    // Build yearly accumulation breakdown
+    // Step 6: Build year-by-year wealth accumulation projections
+    // Shows how corpus grows from current age to retirement through:
+    // - Annual SIP contributions
+    // - Compound growth at pre-retirement return rate
+    // - Both nominal (future) and real (today's) value perspectives
     const yearlyBreakdown = [];
-    let corpusValue = savings;
-    let totalInvested = savings;
+    let corpusValue = savings;  // Start with existing savings
+    let totalInvested = savings;  // Track cumulative investment
 
     for (let year = 1; year <= yearsToRetirement; year++) {
       const yearlyInvestment = monthlyInvestmentNeeded * 12;
       totalInvested += yearlyInvestment;
 
-      // Add investments throughout the year and calculate growth
+      // Simplified annual calculation:
+      // Add year's investment, then apply full year's growth
+      // Assumes investments made at beginning of year (conservative estimate)
       corpusValue = (corpusValue + yearlyInvestment) * (1 + preRetRate);
 
       // Calculate real (inflation-adjusted) values
@@ -499,15 +172,21 @@ export default function RetirementPlanner() {
       });
     }
 
-    // Build post-retirement withdrawal breakdown
+    // Step 7: Build post-retirement withdrawal sustainability analysis
+    // Shows year-by-year corpus depletion through:
+    // - Annual expense withdrawals (growing with inflation)
+    // - Portfolio growth on remaining balance
+    // - Both nominal and real value tracking
+    // Goal: Corpus should last through life expectancy
     const postRetirementBreakdown = [];
-    let remainingCorpus = requiredCorpus;
-    let currentAnnualExpense = annualExpensesAtRetirement;
+    let remainingCorpus = requiredCorpus;  // Start with full corpus at retirement
+    let currentAnnualExpense = annualExpensesAtRetirement;  // First year's expense
 
     for (let year = 1; year <= yearsInRetirement; year++) {
       const openingBalance = remainingCorpus;
       
-      // Only withdraw if corpus is available
+      // Withdraw needed amount (or remaining balance if insufficient)
+      // Expenses grow with inflation each year
       const withdrawal = openingBalance > 0 ? Math.min(currentAnnualExpense, openingBalance) : 0;
       const balanceAfterWithdrawal = Math.max(0, openingBalance - withdrawal);
       const growthOnBalance = balanceAfterWithdrawal * postRetRate;
@@ -559,9 +238,9 @@ export default function RetirementPlanner() {
       </p>
 
       {/* Input Form */}
-      <Card className="rounded-none mb-6">
-        <CardHeader>
-          <CardTitle className="text-2xl">Your Retirement Details</CardTitle>
+      <Card className="rounded-none border-2 border-primary/20 mb-6">
+        <CardHeader className="bg-muted/50 py-4">
+          <CardTitle className="text-lg font-semibold uppercase tracking-wide">Your Retirement Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6 p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -633,7 +312,7 @@ export default function RetirementPlanner() {
             onClick={calculateRetirement}
             className="group relative w-full overflow-hidden rounded-none h-12 text-base"
           >
-            <div className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+            <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
             <span className="relative">Calculate Retirement Plan</span>
           </Button>
         </CardContent>

@@ -1,49 +1,113 @@
 # Practical Investment Calculators
 
-A comprehensive suite of financial calculators built with Next.js, designed to help users make informed investment and financial decisions.
+A comprehensive suite of **financial planning and investment calculators** built with modern web technologies. This project demonstrates full-stack development skills, complex financial calculations, data visualization, and responsive UI/UX design.
 
-![Investment Calculators](https://github.com/basucompunnel/practical-investment-calculators/blob/main/public/screenshot.png?raw=true)
+## 🎯 Project Overview
 
-## Features
+A production-ready web application that helps users make informed financial decisions through interactive calculators for retirement planning, investment comparison, loan affordability, and goal-based investing.
 
-- **EMI Split Calculator** - Calculate EMI paid by rent vs own pocket
-- **Compare Two Investments** - Compare returns, IRR, and growth between two investments with inflation-adjusted values
-- **Affordability Calculator** - Calculate affordability for car, phone, home, or personal loans
-- **Investment Comparison** - Compare returns across equity, debt, gold, FD, and more
-- **Goal-based Planner** - Calculate how much to invest to reach your financial goal
-- **Retirement Planner** - Plan your retirement corpus and monthly savings needed
+## ✨ Key Features
 
-## Getting Started
+### Financial Calculators
+- **Goal-based Planner** - Calculate SIP/lumpsum investments needed to reach financial goals with multiple investment options (PPF, FD, Mutual Funds, Stocks)
+- **Retirement Planner** - Comprehensive retirement corpus calculator with inflation adjustment, dual-phase analysis (accumulation + withdrawal), and year-by-year projections
+- **Investment Comparison** - Compare returns across 10+ investment types including equity, debt, gold, real estate with detailed breakdowns
+- **Two Investment Comparison** - Head-to-head comparison with IRR, XIRR, and inflation-adjusted returns
+- **Loan Affordability Calculator** - Calculate affordability for car, home, personal, and phone loans based on income and existing obligations
+- **EMI Split Calculator** - Analyze rent vs own-pocket EMI payment scenarios
 
-First, run the development server:
+### Technical Highlights
+- **Modular Architecture** - Components split into reusable, well-documented modules (types, constants, utils, UI components)
+- **Complex Financial Calculations** - Implements annuity formulas, compound interest, IRR/XIRR, inflation adjustment, and time-value of money concepts
+- **Interactive Data Visualization** - Line charts, bar charts, area charts, and data tables using Recharts
+- **Responsive Design** - Mobile-first approach with Tailwind CSS, works seamlessly on all devices
+- **Type Safety** - Full TypeScript implementation with strict typing
+- **SEO Optimized** - Meta tags, semantic HTML, and Next.js metadata API
+- **Accessible Forms** - Keyboard navigation, arrow key controls, proper ARIA labels
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🛠️ Tech Stack
+
+**Frontend Framework**
+- Next.js 14+ (App Router)
+- React 18+
+- TypeScript
+
+**Styling**
+- Tailwind CSS
+- Shadcn/ui Component Library
+- Custom themed components
+
+**Data Visualization**
+- Recharts (line, bar, area charts)
+- Custom data tables with formatting
+
+**Development**
+- ESLint for code quality
+- Modular component architecture
+- JSDoc documentation
+
+## 📊 Technical Implementations
+
+### Financial Formulas Implemented
+- **Compound Interest**: `FV = PV × (1 + r)^n`
+- **SIP Future Value**: `FV = PMT × [((1 + r)^n - 1) / r] × (1 + r)`
+- **Annuity Due**: `PV = PMT × [(1 - (1 + r)^-n) / r] × (1 + r)`
+- **IRR/XIRR**: Internal rate of return calculations
+- **Inflation Adjustment**: Real vs nominal value calculations
+
+### Code Organization
+```
+components/
+├── calculators/
+│   ├── retirement-planner/
+│   │   ├── types.ts              # TypeScript interfaces
+│   │   ├── constants.ts          # Configuration & defaults
+│   │   ├── utils.ts              # Calculation utilities
+│   │   ├── SummaryCards.tsx      # UI components
+│   │   ├── AccumulationPhaseChart.tsx
+│   │   ├── PostRetirementChart.tsx
+│   │   └── index.tsx             # Main component
+│   └── [other calculators...]
+├── common/                        # Shared components
+│   ├── DataTable.tsx             # Generic data table
+│   ├── FormField.tsx             # Enhanced input fields
+│   ├── TabSelector.tsx           # Tab navigation
+│   └── SummaryDataPoint.tsx      # Metric display
+└── ui/                            # Shadcn/ui primitives
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Install dependencies
+npm install
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Run development server
+npm run dev
 
-## Learn More
+# Build for production
+npm run build
 
-To learn more about Next.js, take a look at the following resources:
+# Start production server
+npm start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 💡 Skills Demonstrated
 
-## Deploy on Vercel
+- **Frontend Development**: React, Next.js, TypeScript
+- **UI/UX Design**: Responsive layouts, interactive forms, data visualization
+- **Financial Domain Knowledge**: Investment calculations, loan amortization, retirement planning
+- **Code Architecture**: Modular design, separation of concerns, reusable components
+- **Documentation**: Comprehensive JSDoc comments, clear code structure
+- **Performance**: Optimized rendering, code splitting, efficient calculations
+- **Best Practices**: Type safety, accessibility, SEO optimization
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📝 License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT License - feel free to use this project as a portfolio reference.
+
+---
+
+**Built with ❤️ using Next.js and TypeScript**

@@ -5,255 +5,20 @@ import { TabSelector } from "@/components/common/TabSelector";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormField } from "@/components/common/FormField";
 import { Button } from "@/components/ui/button";
-import { SummaryDataPoint } from "@/components/common/SummaryDataPoint";
-import { DataTable } from "@/components/common/DataTable";
 import {
-  ComposedChart,
-  Bar,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
-
-type LoanType = "car" | "home" | "phone" | "education" | "personal" | "bike";
-
-interface CarLoanResult {
-  carPrice: number;
-  loanAmount: number;
-  downPayment: number;
-  monthlyEMI: number;
-  totalInterest: number;
-  totalPayable: number;
-  totalCost: number;
-  suggestedIncomeMin: number;
-  suggestedIncomeMax: number;
-  yearlyBreakdown: Array<{
-    year: number;
-    openingBalance: number;
-    principalPaid: number;
-    interestPaid: number;
-    closingBalance: number;
-  }>;
-}
-
-interface HomeLoanResult {
-  homePrice: number;
-  loanAmount: number;
-  downPayment: number;
-  monthlyEMI: number;
-  totalInterest: number;
-  totalPayable: number;
-  totalCost: number;
-  suggestedIncomeMin: number;
-  suggestedIncomeMax: number;
-  yearlyBreakdown: Array<{
-    year: number;
-    openingBalance: number;
-    principalPaid: number;
-    interestPaid: number;
-    closingBalance: number;
-  }>;
-}
-
-interface PhoneLoanResult {
-  phonePrice: number;
-  loanAmount: number;
-  downPayment: number;
-  monthlyEMI: number;
-  totalInterest: number;
-  totalPayable: number;
-  totalCost: number;
-  suggestedIncomeMin: number;
-  suggestedIncomeMax: number;
-  yearlyBreakdown: Array<{
-    year: number;
-    openingBalance: number;
-    principalPaid: number;
-    interestPaid: number;
-    closingBalance: number;
-  }>;
-}
-
-interface EducationLoanResult {
-  educationCost: number;
-  loanAmount: number;
-  downPayment: number;
-  monthlyEMI: number;
-  totalInterest: number;
-  totalPayable: number;
-  totalCost: number;
-  suggestedIncomeMin: number;
-  suggestedIncomeMax: number;
-  yearlyBreakdown: Array<{
-    year: number;
-    openingBalance: number;
-    principalPaid: number;
-    interestPaid: number;
-    closingBalance: number;
-  }>;
-}
-
-interface PersonalLoanResult {
-  loanAmount: number;
-  monthlyEMI: number;
-  totalInterest: number;
-  totalPayable: number;
-  suggestedIncomeMin: number;
-  suggestedIncomeMax: number;
-  yearlyBreakdown: Array<{
-    year: number;
-    openingBalance: number;
-    principalPaid: number;
-    interestPaid: number;
-    closingBalance: number;
-  }>;
-}
-
-interface BikeLoanResult {
-  bikePrice: number;
-  loanAmount: number;
-  downPayment: number;
-  monthlyEMI: number;
-  totalInterest: number;
-  totalPayable: number;
-  totalCost: number;
-  suggestedIncomeMin: number;
-  suggestedIncomeMax: number;
-  yearlyBreakdown: Array<{
-    year: number;
-    openingBalance: number;
-    principalPaid: number;
-    interestPaid: number;
-    closingBalance: number;
-  }>;
-}
-
-const loanTypeInfo = {
-  car: {
-    title: "Car Affordability",
-    description: "Calculate monthly EMI and total cost for your car loan",
-  },
-  home: {
-    title: "Home Affordability",
-    description: "Calculate how much home you can afford based on your income",
-  },
-  phone: {
-    title: "Phone Affordability",
-    description: "Calculate how much phone you can afford based on your income",
-  },
-  education: {
-    title: "Education Loan",
-    description: "Calculate EMI and total cost for your education loan",
-  },
-  personal: {
-    title: "Personal Loan",
-    description: "Calculate EMI and total cost for your personal loan",
-  },
-  bike: {
-    title: "Two-Wheeler Loan",
-    description: "Calculate monthly EMI and total cost for your bike loan",
-  },
-};
-
-const LOAN_TYPE_OPTIONS = [
-  { value: "home", label: "Home" },
-  { value: "car", label: "Car" },
-  { value: "education", label: "Education" },
-  { value: "personal", label: "Personal" },
-  { value: "bike", label: "Bike" },
-  { value: "phone", label: "Phone" },
-];
-
-// Default values and constants
-type LoanBase = {
-  principal: number;
-  loanPercentage?: number;
-  interestRate: number;
-  tenure: number;
-  step: number;
-  incomeRatioAggressive: number;
-  incomeRatioConservative: number;
-};
-
-const DEFAULTS = {
-  home: {
-    principal: 5_000_000,
-    loanPercentage: 80,
-    interestRate: 8.5,
-    tenure: 20,
-    step: 100_000,
-    incomeRatioAggressive: 0.45,
-    incomeRatioConservative: 0.30,
-  },
-
-  car: {
-    principal: 1_000_000,
-    loanPercentage: 80,
-    interestRate: 8.5,
-    tenure: 5,
-    step: 50_000,
-    incomeRatioAggressive: 0.40,
-    incomeRatioConservative: 0.30,
-  },
-
-  bike: {
-    principal: 150_000,
-    loanPercentage: 90,
-    interestRate: 10,
-    tenure: 3,
-    step: 10_000,
-    incomeRatioAggressive: 0.15,
-    incomeRatioConservative: 0.1,
-  },
-
-  education: {
-    principal: 500_000,
-    loanPercentage: 90,
-    interestRate: 9.5,
-    tenure: 10,
-    step: 50_000,
-    incomeRatioAggressive: 0.35,
-    incomeRatioConservative: 0.25,
-  },
-
-  personal: {
-    principal: 300_000,
-    interestRate: 14,
-    tenure: 3,
-    step: 25_000,
-    incomeRatioAggressive: 0.30,
-    incomeRatioConservative: 0.20,
-  },
-
-  phone: {
-    principal: 100_000,
-    loanPercentage: 100,
-    interestRate: 0,
-    tenure: 1,
-    step: 10_000,
-    incomeRatioAggressive: 0.15,
-    incomeRatioConservative: 0.10,
-  },
-} as const satisfies Record<string, LoanBase>;
-
-const CALCULATION_CONSTANTS = {
-  monthsPerYear: 12,
-  loanPercentageStep: 5,
-  interestRateStep: 0.5,
-  tenureStep: 1,
-} as const;
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(value);
-};
+  LoanType,
+  CarLoanResult,
+  HomeLoanResult,
+  PhoneLoanResult,
+  EducationLoanResult,
+  PersonalLoanResult,
+  BikeLoanResult,
+  YearlyBreakdown,
+} from "./types";
+import { DEFAULTS, CALCULATION_CONSTANTS, LOAN_TYPE_INFO, LOAN_TYPE_OPTIONS } from "./constants";
+import { GenericSummaryCards } from "./GenericSummaryCards";
+import { GenericPaymentBreakdown } from "./GenericPaymentBreakdown";
+import { GenericYearlyBreakdown } from "./GenericYearlyBreakdown";
 
 // Car Input Form Component
 interface CarInputFormProps {
@@ -280,9 +45,9 @@ function CarInputForm({
   onCalculate,
 }: CarInputFormProps) {
   return (
-    <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle className="text-2xl">Car Details</CardTitle>
+    <Card className="rounded-none border-2 border-primary/20">
+      <CardHeader className="bg-muted/50 py-4">
+        <CardTitle className="text-lg font-semibold uppercase tracking-wide">Car Details</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -325,367 +90,6 @@ function CarInputForm({
           <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
           <span className="relative">Calculate</span>
         </Button>
-      </CardContent>
-    </Card>
-  );
-}
-
-// Generic Summary Cards Component
-interface GenericSummaryCardsProps {
-  result: {
-    loanAmount: number;
-    monthlyEMI: number;
-    totalInterest: number;
-    totalPayable: number;
-    suggestedIncomeMin: number;
-    suggestedIncomeMax: number;
-  } & (
-    | { itemPrice: number; downPayment: number; totalCost: number; itemLabel: string }
-    | { itemPrice?: never; downPayment?: never; totalCost?: never; itemLabel?: never }
-  );
-  loanTenure: string;
-  interestRate: string;
-}
-
-function GenericSummaryCards({ result, loanTenure, interestRate }: GenericSummaryCardsProps) {
-  const hasItemPrice = 'itemPrice' in result && result.itemPrice !== undefined;
-  
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {hasItemPrice ? (
-        <Card className="rounded-none">
-          <CardHeader className="bg-muted/50">
-            <CardTitle className="text-lg">{result.itemLabel} & Down Payment</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <SummaryDataPoint
-                label={result.itemLabel}
-                value={formatCurrency(result.itemPrice)}
-              />
-              <SummaryDataPoint
-                label="Loan Amount"
-                value={formatCurrency(result.loanAmount)}
-              />
-              <SummaryDataPoint
-                label="Down Payment"
-                value={formatCurrency(result.downPayment!)}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="rounded-none">
-          <CardHeader className="bg-muted/50">
-            <CardTitle className="text-lg">Loan Amount</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <SummaryDataPoint
-                label="Loan Amount"
-                value={formatCurrency(result.loanAmount)}
-                size="large"
-              />
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card className="rounded-none border-2 border-primary">
-        <CardHeader className="bg-primary text-primary-foreground">
-          <CardTitle className="text-lg">Monthly Payment</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            <SummaryDataPoint
-              label="Monthly EMI"
-              value={formatCurrency(result.monthlyEMI)}
-              size="large"
-            />
-            <SummaryDataPoint
-              label="Suggested Income Range"
-              value={`${formatCurrency(result.suggestedIncomeMin)} - ${formatCurrency(result.suggestedIncomeMax)}`}
-            />
-            <SummaryDataPoint label="Tenure" value={`${loanTenure} years`} />
-            <SummaryDataPoint
-              label="Interest Rate"
-              value={`${interestRate}% p.a.`}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="rounded-none">
-        <CardHeader className="bg-muted/50">
-          <CardTitle className="text-lg">Total Cost</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            <SummaryDataPoint
-              label="Total Interest"
-              value={formatCurrency(result.totalInterest)}
-            />
-            <SummaryDataPoint
-              label="Total Payable"
-              value={formatCurrency(result.totalPayable)}
-            />
-            {hasItemPrice && (
-              <SummaryDataPoint
-                label={`Total Cost of ${result.itemLabel}`}
-                value={formatCurrency(result.totalCost!)}
-              />
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-// Generic Payment Breakdown Component
-interface GenericPaymentBreakdownProps {
-  result: {
-    loanAmount: number;
-    totalInterest: number;
-    totalPayable: number;
-  } & (
-    | { itemPrice: number; downPayment: number }
-    | { itemPrice?: never; downPayment?: never }
-  );
-}
-
-function GenericPaymentBreakdown({ result }: GenericPaymentBreakdownProps) {
-  const hasItemPrice = 'itemPrice' in result && result.itemPrice !== undefined;
-  
-  return (
-    <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle className="text-2xl">Payment Breakdown</CardTitle>
-      </CardHeader>
-      <CardContent className="p-6">
-        <div className={`grid grid-cols-1 ${hasItemPrice ? 'md:grid-cols-2' : 'md:grid-cols-1'} gap-8`}>
-          {hasItemPrice && (
-            <div>
-              <div className="text-sm font-semibold mb-4">
-                Down Payment vs Loan Amount
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-green-600 rounded-sm"></div>
-                    <span className="text-sm">Down Payment</span>
-                  </div>
-                  <span className="text-sm font-medium">
-                    {formatCurrency(result.downPayment!)} (
-                    {((result.downPayment! / result.itemPrice!) * 100).toFixed(1)}%)
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-blue-600 rounded-sm"></div>
-                    <span className="text-sm">Loan Amount</span>
-                  </div>
-                  <span className="text-sm font-medium">
-                    {formatCurrency(result.loanAmount)} (
-                    {((result.loanAmount / result.itemPrice!) * 100).toFixed(1)}%)
-                  </span>
-                </div>
-              </div>
-              <div className="mt-4 h-4 flex rounded-none overflow-hidden">
-                <div
-                  className="bg-green-600"
-                  style={{
-                    width: `${(result.downPayment! / result.itemPrice!) * 100}%`,
-                  }}
-                ></div>
-                <div
-                  className="bg-blue-600"
-                  style={{
-                    width: `${(result.loanAmount / result.itemPrice!) * 100}%`,
-                  }}
-                ></div>
-              </div>
-            </div>
-          )}
-
-          <div>
-            <div className="text-sm font-semibold mb-4">
-              Principal vs Interest
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-purple-600 rounded-sm"></div>
-                  <span className="text-sm">Principal</span>
-                </div>
-                <span className="text-sm font-medium">
-                  {formatCurrency(result.loanAmount)} (
-                  {((result.loanAmount / result.totalPayable) * 100).toFixed(1)}
-                  %)
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-orange-600 rounded-sm"></div>
-                  <span className="text-sm">Interest</span>
-                </div>
-                <span className="text-sm font-medium">
-                  {formatCurrency(result.totalInterest)} (
-                  {((result.totalInterest / result.totalPayable) * 100).toFixed(
-                    1,
-                  )}
-                  %)
-                </span>
-              </div>
-            </div>
-            <div className="mt-4 h-4 flex rounded-none overflow-hidden">
-              <div
-                className="bg-purple-600"
-                style={{
-                  width: `${(result.loanAmount / result.totalPayable) * 100}%`,
-                }}
-              ></div>
-              <div
-                className="bg-orange-600"
-                style={{
-                  width: `${(result.totalInterest / result.totalPayable) * 100}%`,
-                }}
-              ></div>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// Loan Amortization Chart Component
-interface LoanAmortizationChartProps {
-  data: Array<{
-    year: number;
-    openingBalance: number;
-    principalPaid: number;
-    interestPaid: number;
-    closingBalance: number;
-  }>;
-}
-
-function LoanAmortizationChart({ data }: LoanAmortizationChartProps) {
-  return (
-    <div className="w-full h-80">
-      <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart
-          data={data}
-          margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-          <XAxis 
-            dataKey="year" 
-            label={{ value: 'Year', position: 'insideBottom', offset: -10 }}
-            className="text-sm"
-          />
-          <YAxis 
-            label={{ value: 'Amount (₹)', angle: -90, position: 'insideLeft' }}
-            tickFormatter={(value) => `₹${(value / 100000).toFixed(0)}L`}
-            className="text-sm"
-          />
-          <Tooltip 
-            formatter={(value) => value ? formatCurrency(Number(value)) : ''}
-            contentStyle={{ 
-              backgroundColor: 'hsl(var(--background))', 
-              border: '1px solid hsl(var(--border))',
-              borderRadius: '6px'
-            }}
-          />
-          <Legend 
-            wrapperStyle={{ paddingTop: '20px' }}
-            iconType="rect"
-          />
-          <Bar 
-            dataKey="principalPaid" 
-            stackId="a" 
-            fill="#9333ea" 
-            name="Principal Paid"
-            radius={[0, 0, 0, 0]}
-          />
-          <Bar 
-            dataKey="interestPaid" 
-            stackId="a" 
-            fill="#ea580c" 
-            name="Interest Paid"
-            radius={[4, 4, 0, 0]}
-          />
-          <Line 
-            type="monotone" 
-            dataKey="closingBalance" 
-            stroke="#2563eb" 
-            strokeWidth={2}
-            name="Closing Balance"
-            dot={{ fill: '#2563eb', r: 4 }}
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-// Generic Year-by-Year Breakdown Component
-interface GenericYearlyBreakdownProps {
-  result: {
-    yearlyBreakdown: Array<{
-      year: number;
-      openingBalance: number;
-      principalPaid: number;
-      interestPaid: number;
-      closingBalance: number;
-    }>;
-  };
-}
-
-function GenericYearlyBreakdown({ result }: GenericYearlyBreakdownProps) {
-  return (
-    <Card className="rounded-none">
-      <CardHeader>
-        <CardTitle className="text-2xl">Year-by-Year Breakdown</CardTitle>
-      </CardHeader>
-      <CardContent className="p-6 space-y-8">
-        {/* Combo Chart */}
-        <LoanAmortizationChart data={result.yearlyBreakdown} />
-
-        {/* Data Table */}
-        <DataTable
-          data={result.yearlyBreakdown}
-          columns={[
-            { key: "year", header: "Year", align: "left" },
-            {
-              key: "openingBalance",
-              header: "Opening Balance",
-              align: "right",
-              render: (value) => formatCurrency(value as number),
-            },
-            {
-              key: "principalPaid",
-              header: "Principal Paid",
-              align: "right",
-              className: "text-purple-600 font-medium",
-              render: (value) => formatCurrency(value as number),
-            },
-            {
-              key: "interestPaid",
-              header: "Interest Paid",
-              align: "right",
-              className: "text-orange-600 font-medium",
-              render: (value) => formatCurrency(value as number),
-            },
-            {
-              key: "closingBalance",
-              header: "Closing Balance",
-              align: "right",
-              render: (value) => formatCurrency(value as number),
-            },
-          ]}
-          getRowKey={(row) => row.year}
-        />
       </CardContent>
     </Card>
   );
@@ -738,9 +142,11 @@ function CarAffordabilityCalculator() {
       let yearlyPrincipal = 0;
       let yearlyInterest = 0;
 
-      // Calculate for 12 months
+      // Process 12 monthly payments for this year
       for (let month = 1; month <= CALCULATION_CONSTANTS.monthsPerYear; month++) {
+        // Interest is calculated on remaining balance
         const interestForMonth = remainingBalance * monthlyRate;
+        // Remaining EMI amount goes to principal
         const principalForMonth = monthlyEMI - interestForMonth;
 
         yearlyInterest += interestForMonth;
@@ -872,9 +278,9 @@ function HomeAffordabilityCalculator() {
 
   return (
     <>
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="text-2xl">Home Details</CardTitle>
+      <Card className="rounded-none border-2 border-primary/20">
+        <CardHeader className="bg-muted/50 py-4">
+          <CardTitle className="text-lg font-semibold uppercase tracking-wide">Home Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6 p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -937,7 +343,8 @@ function HomeAffordabilityCalculator() {
   );
 }
 
-// PhoneAffordabilityCalculator
+// Phone Affordability Calculator Component
+// Special handling: Supports 0% interest rate for promotional offers
 function PhoneAffordabilityCalculator() {
   const [phonePrice, setPhonePrice] = useState<string>(String(DEFAULTS.phone.principal));
   const [loanPercentage, setLoanPercentage] = useState<string>(String(DEFAULTS.phone.loanPercentage));
@@ -959,9 +366,11 @@ function PhoneAffordabilityCalculator() {
     const monthlyRate = rate / CALCULATION_CONSTANTS.monthsPerYear;
     const months = tenure * CALCULATION_CONSTANTS.monthsPerYear;
     let monthlyEMI;
+    // Handle 0% interest promotional offers differently (simple division)
     if (rate === 0) {
       monthlyEMI = loanAmount / months;
     } else {
+      // Standard EMI formula for interest-bearing loans
       monthlyEMI =
         (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, months)) /
         (Math.pow(1 + monthlyRate, months) - 1);
@@ -1011,9 +420,9 @@ function PhoneAffordabilityCalculator() {
 
   return (
     <>
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="text-2xl">Phone Details</CardTitle>
+      <Card className="rounded-none border-2 border-primary/20">
+        <CardHeader className="bg-muted/50 py-4">
+          <CardTitle className="text-lg font-semibold uppercase tracking-wide">Phone Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6 p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -1145,9 +554,9 @@ function EducationLoanCalculator() {
 
   return (
     <>
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="text-2xl">Education Loan Details</CardTitle>
+      <Card className="rounded-none border-2 border-primary/20">
+        <CardHeader className="bg-muted/50 py-4">
+          <CardTitle className="text-lg font-semibold uppercase tracking-wide">Education Loan Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6 p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -1210,7 +619,8 @@ function EducationLoanCalculator() {
   );
 }
 
-// PersonalLoanCalculator
+// Personal Loan Calculator Component
+// Note: No down payment - full amount is borrowed
 function PersonalLoanCalculator() {
   const [loanAmount, setLoanAmount] = useState<string>(String(DEFAULTS.personal.principal));
   const [interestRate, setInterestRate] = useState<string>(String(DEFAULTS.personal.interestRate));
@@ -1271,9 +681,9 @@ function PersonalLoanCalculator() {
 
   return (
     <>
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="text-2xl">Personal Loan Details</CardTitle>
+      <Card className="rounded-none border-2 border-primary/20">
+        <CardHeader className="bg-muted/50 py-4">
+          <CardTitle className="text-lg font-semibold uppercase tracking-wide">Personal Loan Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6 p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1324,7 +734,7 @@ function PersonalLoanCalculator() {
   );
 }
 
-// BikeLoanCalculator
+// Two-Wheeler (Bike) Loan Calculator Component
 function BikeLoanCalculator() {
   const [bikePrice, setBikePrice] = useState<string>(String(DEFAULTS.bike.principal));
   const [loanPercentage, setLoanPercentage] = useState<string>(String(DEFAULTS.bike.loanPercentage));
@@ -1393,9 +803,9 @@ function BikeLoanCalculator() {
 
   return (
     <>
-      <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="text-2xl">Two-Wheeler Details</CardTitle>
+      <Card className="rounded-none border-2 border-primary/20">
+        <CardHeader className="bg-muted/50 py-4">
+          <CardTitle className="text-lg font-semibold uppercase tracking-wide">Two-Wheeler Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6 p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -1476,7 +886,7 @@ export default function AffordabilityCalculator() {
       </div>
 
       <p className="text-muted-foreground mb-8 text-lg">
-        {loanTypeInfo[selectedType].description}
+        {LOAN_TYPE_INFO[selectedType].description}
       </p>
 
       {selectedType === "car" && <CarAffordabilityCalculator />}
